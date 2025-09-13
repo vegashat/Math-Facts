@@ -3,7 +3,7 @@ FROM node:20 AS build
 
 WORKDIR /app
 
-# Copy dependencies first (for caching)
+# Install dependencies first (cache-friendly)
 COPY package.json package-lock.json ./
 RUN npm ci
 
@@ -13,13 +13,16 @@ COPY . .
 # Build Angular app (production)
 RUN npm run build -- --configuration production
 
-# Stage 2: Serve with Nginx
+# Stage 2: Nginx serve
 FROM nginx:1.27-alpine
 
-# Copy built Angular files (note the /browser)
+# Remove default Nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy built Angular app
 COPY --from=build /app/dist/math-facts/browser /usr/share/nginx/html
 
-# Copy custom nginx config (for Angular routes)
+# Copy our custom config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
