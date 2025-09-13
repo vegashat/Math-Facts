@@ -1,0 +1,23 @@
+<mat-card>
+  <h2>Select a User</h2>
+  <div *ngIf="users.length > 0; else noUsers">
+    <div *ngFor="let u of users" class="user-row">
+      <button mat-raised-button color="primary" (click)="switchUser(u.id)">
+        {{ u.name }}
+      </button>
+      <button mat-button color="warn" (click)="deleteUser(u.id)">Delete</button>
+    </div>
+  </div>
+
+  <ng-template #noUsers>
+    <p>No users yet. Create one below!</p>
+  </ng-template>
+</mat-card>
+
+<mat-card>
+  <h2>Add New User</h2>
+  <mat-form-field appearance="outline">
+    <input matInput placeholder="Enter name" [(ngModel)]="newUserName" />
+  </mat-form-field>
+  <button mat-raised-button color="accent" (click)="addUser()">Add</button>
+</mat-card>

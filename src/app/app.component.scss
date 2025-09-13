@@ -1,0 +1,20 @@
+.toolbar {
+  display: flex;
+  .brand {
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  .spacer {
+    flex: 1;
+  }
+  .user {
+    margin-right: 12px;
+    font-size: 1rem;
+  }
+}
+
+.toolbar a.active-link {
+  font-weight: bold;
+  text-decoration: underline;
+  color: #fff; /* keeps text white in the toolbar */
+}

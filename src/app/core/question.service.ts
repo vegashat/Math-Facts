@@ -1,0 +1,146 @@
+import { Injectable } from '@angular/core';
+import { Question, Operation } from './models/fact.model';
+import { StorageService } from './storage.service';
+
+@Injectable({ providedIn: 'root' })
+export class QuestionService {
+  constructor(private store: StorageService) {}
+
+  // Backwards compatible: your component calls this
+  getNextQuestion(): Question {
+    return this.getQuestion();
+  }
+
+  // Main generator (progressive challenge logic)
+  getQuestion(): Question {
+    const mode = this.store.getMode();
+    const selected = this.store.getSelectedNumbers();
+
+    let a = 1, b = 1, op: Operation;
+
+    if (mode === 'tables') {
+      // pick base from selected, other 1..12
+      const base = selected.length > 0
+        ? selected[Math.floor(Math.random() * selected.length)]
+        : 1;
+      a = base;
+      b = Math.floor(Math.random() * 12) + 1;
+      op = Operation.Multiplication;
+    } else {
+      // single-digit addition OR subtraction
+      a = Math.floor(Math.random() * 9) + 1;
+      b = Math.floor(Math.random() * 9) + 1;
+      op = Math.random() < 0.5 ? Operation.Addition : Operation.Subtraction;
+      if (op === Operation.Subtraction && b > a) {
+        [a, b] = [b, a]; // keep non-negative
+      }
+    }
+
+    const answer =
+      op === Operation.Multiplication ? a * b :
+      op === Operation.Addition ? a + b :
+      a - b;
+
+    const key = `${a}-${op}-${b}`;
+    // ensure stats exist + attempts initialized
+    const stats = this.ensureStats(key);
+    // bump attempts each time we SHOW a question
+    stats.attempts += 1;
+    this.store.saveProblemStats(key, () => stats);
+
+    // Decide mode/options by attempts:
+    // 1st  -> typed with placeholder
+    // 2nd  -> 2 options (correct + way off)
+    // 3rd  -> 3 options (correct + close + way off)
+    // 4th+ -> typed (no hint)
+    let qMode: 'mc' | 'typed';
+    let options: number[] | undefined;
+    let placeholder: string | undefined;
+
+    switch (stats.attempts) {
+      case 1:
+        qMode = 'typed';
+        placeholder = String(answer);
+        break;
+      case 2:
+        qMode = 'mc';
+        options = this.buildTwoOptions(answer);
+        break;
+      case 3:
+        qMode = 'mc';
+        options = this.buildThreeOptions(answer);
+        break;
+      default:
+        qMode = 'typed';
+        break;
+    }
+
+    const orientation: 'min-first' | 'max-first' = a <= b ? 'min-first' : 'max-first';
+
+    return {
+      a,
+      b,
+      operation: op,
+      product: answer,
+      mode: qMode,
+      options,
+      placeholder,
+      key,
+      orientation,
+    };
+  }
+
+  // Called by your component after the user answers
+  recordAnswer(q: Question, isCorrect: boolean) {
+    // Update per-problem stats
+    const stats = this.ensureStats(q.key);
+    if (isCorrect) {
+      stats.correct += 1;
+    } else {
+      stats.wrong += 1;
+      // your previous logic was to drop back typing requirements on wrong;
+      // the new progressive flow is attempt-based, so no special toggle needed here.
+    }
+    this.store.saveProblemStats(q.key, () => stats);
+
+    // Update lifetime stats
+    this.store.updateLifetimeStats({
+      total: 1,
+      correct: isCorrect ? 1 : 0,
+    });
+  }
+
+  // ---------- helpers ----------
+
+  private ensureStats(key: string) {
+    const s = this.store.getProblemStats(key);
+    // initialize attempts if missing (for existing localStorage data)
+    if (typeof s.attempts !== 'number') s.attempts = 0;
+    return s;
+  }
+
+  private buildTwoOptions(answer: number): number[] {
+    // way off = +5..+14 or -5..-14 (keep >= 0)
+    let wayOff = answer + (Math.floor(Math.random() * 10) + 5) * (Math.random() < 0.5 ? 1 : -1);
+    if (wayOff < 0) wayOff = answer + 10;
+    return this.shuffle([answer, wayOff]);
+  }
+
+  private buildThreeOptions(answer: number): number[] {
+    // close = +/- 1..2
+    const close = Math.max(0, answer + (Math.random() < 0.5 ? -1 : 1) * (1 + Math.floor(Math.random() * 2)));
+    // way off = +5..+14 or -5..-14 (keep >= 0)
+    let wayOff = answer + (Math.floor(Math.random() * 10) + 5) * (Math.random() < 0.5 ? 1 : -1);
+    if (wayOff < 0) wayOff = answer + 10;
+    return this.shuffle([answer, close, wayOff]);
+  }
+
+  private shuffle<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+}

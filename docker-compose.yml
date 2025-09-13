@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  math-facts:
+    build: .
+    container_name: math-facts
+    ports:
+      - "4277:80"
+    restart: unless-stopped

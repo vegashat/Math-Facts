@@ -1,0 +1,45 @@
+<mat-card>
+  <h2>Practice Mode</h2>
+  <mat-radio-group [(ngModel)]="mode">
+    <mat-radio-button value="tables">Multiplication Tables (choose numbers)</mat-radio-button>
+    <mat-radio-button value="single-digit">Single-Digit Addition & Subtraction (1–9)</mat-radio-button>
+  </mat-radio-group>
+</mat-card>
+
+<mat-card *ngIf="mode() === 'tables'">
+  <h2>Multiplication Tables</h2>
+  <p>Select one or more base numbers (e.g., just 7’s or a set like 3, 6, 9).</p>
+
+  <div class="grid">
+    <label *ngFor="let n of numbers" class="cell">
+      <mat-checkbox
+        [checked]="selected().includes(n)"
+        (change)="toggle(n, $event.checked!)">
+        {{ n }}’s
+      </mat-checkbox>
+    </label>
+  </div>
+
+  <div class="actions">
+    <button mat-button (click)="selectAll()">Select All</button>
+    <button mat-button (click)="clearAll()">Clear</button>
+      <mat-divider></mat-divider>
+  <mat-slide-toggle [(ngModel)]="useCustomKeypad" (change)="saveKeypadSetting()">
+    Use custom keypad
+  </mat-slide-toggle>
+
+    <span class="spacer"></span>
+    <a mat-button routerLink="/quiz">Cancel</a>
+    <button mat-raised-button color="primary" (click)="save()">Save</button>
+  </div>
+</mat-card>
+
+<mat-card *ngIf="mode() === 'single-digit'">
+  <h2>Single-Digit Mode</h2>
+  <p>You’ll practice random addition and subtraction problems using numbers 1–9.</p>
+  <div class="actions">
+    <span class="spacer"></span>
+    <a mat-button routerLink="/quiz">Cancel</a>
+    <button mat-raised-button color="primary" (click)="save()">Start</button>
+  </div>
+</mat-card>

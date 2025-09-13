@@ -1,0 +1,27 @@
+mat-card {
+  max-width: 720px;
+  margin: 24px auto;
+  padding: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}

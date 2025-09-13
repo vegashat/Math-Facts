@@ -1,0 +1,32 @@
+<div class="mode-toggle">
+  <button (click)="setMode('tables')" [class.active]="mode === 'tables'">
+    Multiplication
+  </button>
+  <button (click)="setMode('single-digit')" [class.active]="mode === 'single-digit'">
+    Single Digit (+/−)
+  </button>
+</div>
+
+<h2 *ngIf="mode === 'tables'">Multiplication Facts</h2>
+<h2 *ngIf="mode === 'single-digit'">Single Digit Addition & Subtraction</h2>
+
+<table class="fact-table">
+  <thead>
+    <tr>
+      <th></th>
+      <th *ngFor="let c of cols">{{ c }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let r of rows">
+      <th>{{ r }}</th>
+      <td *ngFor="let c of cols" [ngClass]="getColorClass(getStats(r, c).percent)">
+        <div class="cell">
+          <span *ngIf="getStats(r, c).attempts > 0">
+            {{ getStats(r, c).percent }}%
+          </span>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

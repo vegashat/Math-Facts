@@ -1,0 +1,30 @@
+<mat-card>
+  <h2>User Stats</h2>
+
+  <div class="user-select">
+    <label for="user">Select User:</label>
+    <select
+      id="user"
+      [(ngModel)]="selectedUserId"
+      (change)="onUserChange(selectedUserId!)"
+    >
+      <option *ngFor="let u of users" [value]="u.id">{{ u.name }}</option>
+    </select>
+  </div>
+
+  <div *ngIf="selectedUserId">
+    <div><strong>Total:</strong> {{ total }}</div>
+    <div><strong>Correct:</strong> {{ correct }}</div>
+    <div><strong>Percent:</strong> {{ percent }}%</div>
+
+    <app-stats-table *ngIf="selectedUserId" [userId]="selectedUserId"></app-stats-table>
+    <div class="actions">
+      <button mat-raised-button color="warn" (click)="reset()">
+        Reset Lifetime
+      </button>
+      <a mat-button routerLink="/quiz">Back to Quiz</a>
+    </div>
+  </div>
+</mat-card>
+
+<!-- Pass selected user ID down to stats-table -->
