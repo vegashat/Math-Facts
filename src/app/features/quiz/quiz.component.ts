@@ -40,6 +40,11 @@ export class QuizComponent implements OnInit {
   feedback: 'idle' | 'correct' | 'wrong' = 'idle';
   useCustomKeypad = false;
 
+  showAnswer = signal(false);
+  flashing = signal(false);
+  private revealTimer: any;
+  private flashTimer: any;
+
   @HostBinding('class') get feedbackClass() {
     return this.feedback;
   }
@@ -64,11 +69,29 @@ export class QuizComponent implements OnInit {
     this.useCustomKeypad = this.store.getUseCustomKeypad();
   }
 
+  private clearTimers() {
+    clearTimeout(this.revealTimer);
+    clearTimeout(this.flashTimer);
+  }
+
   private loadNext() {
     this.feedback = 'idle';
     this.typedAnswer.set('');
+    this.showAnswer.set(false);
+    this.flashing.set(false);
+    this.clearTimers();
+
     const q = this.qs.getNextQuestion();
     this.question.set(q);
+
+    // schedule answer reveal after 5s
+    this.revealTimer = setTimeout(() => {
+      this.flashing.set(true);
+      this.flashTimer = setTimeout(() => {
+        this.flashing.set(false);
+        this.showAnswer.set(true);
+      }, 2000); // flash for 2 seconds
+    }, 5000);
 
     setTimeout(() => {
       if (q?.mode === 'typed' && this.answerInput && !this.useCustomKeypad) {
@@ -107,6 +130,7 @@ export class QuizComponent implements OnInit {
   }
 
   private handleResult(isCorrect: boolean) {
+    this.clearTimers(); // cancel reveal if answered early
     const q = this.question();
     if (!q) return;
 

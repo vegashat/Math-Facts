@@ -4,7 +4,7 @@ import { StorageService } from './storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class QuestionService {
-  constructor(private store: StorageService) {}
+  constructor(private store: StorageService) { }
 
   // Backwards compatible: your component calls this
   getNextQuestion(): Question {
@@ -38,8 +38,8 @@ export class QuestionService {
 
     const answer =
       op === Operation.Multiplication ? a * b :
-      op === Operation.Addition ? a + b :
-      a - b;
+        op === Operation.Addition ? a + b :
+          a - b;
 
     const key = `${a}-${op}-${b}`;
     // ensure stats exist + attempts initialized
@@ -108,6 +108,58 @@ export class QuestionService {
       total: 1,
       correct: isCorrect ? 1 : 0,
     });
+  }
+  // in question.service.ts
+  generateQuiz(
+    tables: number[],
+    count: number,
+    mode: 'mc' | 'typed',
+    repeatIncorrect: boolean,
+    operation: 'multiplication' | 'addition' | 'subtraction' = 'multiplication'
+  ): Question[] {
+    const questions: Question[] = [];
+
+    for (let i = 0; i < count; i++) {
+      let a: number, b: number, op: Operation;
+
+      if (operation === 'multiplication') {
+        if (!tables || tables.length === 0) {
+          tables = [1]; // fallback so it always works
+        }
+        a = tables[Math.floor(Math.random() * tables.length)];
+        b = Math.floor(Math.random() * 10) + 1; // 1–10
+        op = Operation.Multiplication;
+
+      } else if (operation === 'addition') {
+        a = Math.floor(Math.random() * 12) + 1;
+        b = Math.floor(Math.random() * 12) + 1;
+        op = Operation.Addition;
+
+      } else {
+        a = Math.floor(Math.random() * 12) + 1;
+        b = Math.floor(Math.random() * 12) + 1;
+        if (b > a) [a, b] = [b, a]; // keep non-negative
+        op = Operation.Subtraction;
+      }
+
+      const answer =
+        op === Operation.Multiplication ? a * b :
+          op === Operation.Addition ? a + b :
+            a - b;
+
+      questions.push({
+        a,
+        b,
+        operation: op,
+        product: answer,
+        mode,
+        options: mode === 'mc' ? this.buildThreeOptions(answer) : undefined,
+        key: `${a}-${op}-${b}`,
+        orientation: a <= b ? 'min-first' : 'max-first',
+      });
+    }
+
+    return questions;
   }
 
   // ---------- helpers ----------

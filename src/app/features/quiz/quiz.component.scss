@@ -2,9 +2,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;  /* full screen height */
-  width: 100vw;   /* full screen width */
-  background: #f0f4f8; /* soft background color */
+  height: 100vh;
+  width: 100vw;
+  background: #f0f4f8;
 }
 
 .quiz-card {
@@ -13,7 +13,7 @@
   justify-content: space-between;
   width: 100%;
   height: 100%;
-  max-width: 1000px; /* keeps it from being too wide on desktop */
+  max-width: 1000px;
   padding: 24px;
   box-sizing: border-box;
   border-radius: 12px;
@@ -27,23 +27,8 @@
   }
 }
 
-.top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-
-  .spacer {
-    flex: 1;
-  }
-
-  .user {
-    font-size: 1.2rem;
-  }
-}
-
 .q-wrap {
-  flex: 1; /* take all space between header & footer */
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -52,7 +37,7 @@
 }
 
 .question {
-  font-size: 4rem; /* extra big for iPad */
+  font-size: 4rem;
   font-weight: bold;
   margin: 20px 0 40px;
 }
@@ -101,82 +86,43 @@
   padding: 12px 0;
 }
 
-/* ----------------------
-   Placeholder animations
-   ---------------------- */
+.typed-display {
+  position: relative;
+  display: inline-block;
+  width: 260px;
 
-/* Default (no hint) */
-.typed-field input::placeholder {
-  color: transparent;
-}
-
-/* Explicit "with-placeholder" class (if you want to toggle it manually) */
-.typed-field input.with-placeholder::placeholder {
-  color: rgba(0, 0, 0, 0.6); /* start semi-visible */
-  text-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
-  animation: fadePlaceholder 1s ease forwards;
-}
-
-/* When answer-hint class is applied */
-.answer-hint::placeholder {
-  color: rgba(0, 0, 0, 0.65); /* start visible */
-  text-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
-  animation: fadePlaceholder 1.8s ease forwards;
-}
-
-@keyframes fadePlaceholder {
-  0% {
-    color: rgba(0, 0, 0, 0.65);
-    text-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+  input {
+    font-size: 2.2rem;
+    text-align: center;
+    padding: 12px;
+    width: 100%;
   }
-  70% {
-    color: rgba(0, 0, 0, 0.2);
-    text-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+
+  .hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+  }
+
+  .flash {
+    animation: flashFade 2s ease-in-out;
+  }
+}
+
+@keyframes flashFade {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
   }
   100% {
-    color: transparent;
-    text-shadow: none;
+    opacity: 0;
   }
-}
-
-/* ----------------------
-   Keypad display + overlay
-   ---------------------- */
-
-.typed-display {
-  font-size: 2.5rem;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 16px;
-  min-height: 48px;
-  background: #fff;
-  padding: 12px;
-  border-radius: 8px;
-  border: 2px solid #ccc;
-  width: 200px;
-
-  position: relative;
-  overflow: hidden;
-}
-
-.typed-display .value {
-  position: relative;
-  z-index: 1;
-}
-
-/* Hint overlay: shows correct answer then fades away */
-.typed-display.has-hint .hint-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-
-  color: rgba(0, 0, 0, 0.65);
-  text-shadow: 0 0 6px rgba(0,0,0,0.4);
-  animation: fadePlaceholder 1s ease forwards;
-  pointer-events: none;
 }
 
 .keypad {
@@ -194,5 +140,17 @@
   .enter {
     background: #4caf50;
     color: white;
+  }
+}
+
+.answer-overlay {
+  margin-top: 8px;
+  font-size: 1.8rem;
+  text-align: center;
+  min-height: 2.2rem; /* keeps space even if empty */
+  color: rgba(0, 0, 0, 0.7);
+
+  .flash {
+    animation: flashFade 2s ease-in-out;
   }
 }

@@ -1,20 +1,34 @@
-<mat-card class="quiz-card" [class.correct]="feedback === 'correct'" [class.wrong]="feedback === 'wrong'">
+<mat-card
+  class="quiz-card"
+  [class.correct]="feedback === 'correct'"
+  [class.wrong]="feedback === 'wrong'"
+>
   <div class="q-wrap" *ngIf="question() as q">
     <h2 class="question">
       {{ q.a }}
       {{
-      q.operation === 'multiplication'
-      ? '×'
-      : q.operation === 'addition'
-      ? '+'
-      : '−'
+        q.operation === 'multiplication'
+          ? '×'
+          : q.operation === 'addition'
+          ? '+'
+          : '−'
       }}
-      {{ q.b }} = ?
+      {{ q.b }} =
+      <ng-container>
+        <span *ngIf="!showAnswer() && !flashing()">?</span>
+        <span *ngIf="flashing()" class="flash">{{ q.product }}</span>
+        <span *ngIf="showAnswer()">{{ q.product }}</span>
+      </ng-container>
     </h2>
 
     <!-- Multiple-choice -->
     <div class="options" *ngIf="q.mode === 'mc'">
-      <button mat-raised-button class="opt" *ngFor="let opt of q.options!" (click)="pickOption(opt)">
+      <button
+        mat-raised-button
+        class="opt"
+        *ngFor="let opt of q.options!"
+        (click)="pickOption(opt)"
+      >
         {{ opt }}
       </button>
     </div>
@@ -24,30 +38,35 @@
       <!-- Default keyboard -->
       <div *ngIf="!useCustomKeypad" class="typed">
         <mat-form-field appearance="outline" class="typed-field">
-          <input #answerInput matInput type="number" [placeholder]="q.placeholder || 'Type your answer'"
-            [class.answer-hint]="!!q.placeholder" [value]="typedAnswer()" (input)="onTypedInput($event)"
-            (keyup.enter)="submitTyped()" [attr.key]="q.key" />
+          <input
+            #answerInput
+            matInput
+            type="number"
+            placeholder="Answer?"
+            [value]="typedAnswer()"
+            (input)="onTypedInput($event)"
+            (keyup.enter)="submitTyped()"
+            [attr.key]="q.key"
+          />
         </mat-form-field>
+
         <button mat-raised-button color="primary" (click)="submitTyped()">
           Submit
         </button>
       </div>
 
       <!-- Custom keypad -->
-      <!-- Custom keypad -->
       <div *ngIf="useCustomKeypad" class="typed">
-        <div class="typed-display" [class.has-hint]="!!q.placeholder">
-          <!-- Hint overlay (only on first attempt, while no digits typed) -->
-          <span *ngIf="q.placeholder && !typedAnswer()" class="hint-overlay">
-            {{ q.placeholder }}
-          </span>
-
-          <!-- Actual value / fallback dots -->
+        <div class="typed-display">
+          <span *ngIf="flashing()" class="hint flash">{{ q.product }}</span>
+          <span *ngIf="showAnswer()" class="hint">{{ q.product }}</span>
           <span class="value">{{ typedAnswer() || ' ' }}</span>
         </div>
 
         <div class="keypad">
-          <button *ngFor="let n of [1,2,3,4,5,6,7,8,9]" (click)="appendDigit(n)">{{ n }}</button>
+          <button *ngFor="let n of [1, 2, 3, 4, 5, 6, 7, 8, 9]" (click)="appendDigit(n)">
+            {{ n }}
+          </button>
           <button (click)="appendDigit(0)">0</button>
           <button (click)="backspace()">←</button>
           <button class="enter" (click)="submitTyped()">⏎</button>

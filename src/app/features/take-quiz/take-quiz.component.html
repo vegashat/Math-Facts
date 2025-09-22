@@ -1,0 +1,123 @@
+<mat-card *ngIf="mode() === 'setup'">
+    <h2>Setup Challenge</h2>
+
+    <!-- Operation type -->
+    <mat-radio-group [(ngModel)]="operation">
+        <mat-radio-button value="multiplication">Multiplication</mat-radio-button>
+        <mat-radio-button value="addition">Addition</mat-radio-button>
+        <mat-radio-button value="subtraction">Subtraction</mat-radio-button>
+    </mat-radio-group>
+
+    <!-- Only show tables if multiplication -->
+    <div *ngIf="operation === 'multiplication'">
+        <p>Select up to 2 multiplication tables:</p>
+        <div class="tables">
+            <mat-checkbox *ngFor="let n of [1,2,3,4,5,6,7,8,9,10]" [checked]="selectedTables.includes(n)"
+                (change)="toggleTable(n)">
+                {{ n }}
+            </mat-checkbox>
+        </div>
+    </div>
+
+    <mat-form-field>
+        <mat-label>Total Questions</mat-label>
+        <input matInput type="number" [(ngModel)]="totalQuestions" />
+    </mat-form-field>
+
+    <mat-form-field>
+        <mat-label>Required Correct</mat-label>
+        <input matInput type="number" [(ngModel)]="requiredCorrect" />
+    </mat-form-field>
+
+    <mat-form-field>
+        <mat-label>Reward</mat-label>
+        <input matInput [(ngModel)]="reward" />
+    </mat-form-field>
+
+    <mat-radio-group [(ngModel)]="quizMode">
+        <mat-radio-button value="mc">Multiple Choice</mat-radio-button>
+        <mat-radio-button value="typed">Typed</mat-radio-button>
+    </mat-radio-group>
+
+    <mat-checkbox [(ngModel)]="repeatIncorrect">
+        Repeat incorrect until correct
+    </mat-checkbox>
+
+    <button mat-raised-button color="primary" (click)="startQuiz()">
+        Start Quiz
+    </button>
+</mat-card>
+
+<!-- Quiz -->
+<mat-card *ngIf="mode() === 'quiz' && currentQ as q" class="quiz-card">
+    <!-- Progress Tracker -->
+    <div class="progress-tracker" *ngIf="mode() === 'quiz'">
+        <div class="tracker-box" *ngFor="let q of questions; let i = index"
+            [class.correct]="i < currentIndex() && answers[i] === true"
+            [class.wrong]="i < currentIndex() && answers[i] === false" [class.current]="i === currentIndex()">
+            <span *ngIf="i + 1 === requiredCorrect" class="marker">⭐</span>
+        </div>
+    </div>
+    <div class="q-wrap">
+        <h2 class="question">Question {{ currentIndex() + 1 }} / {{ totalQuestions }}</h2>
+
+        <div class="progress">
+            <div class="bar" [style.height.%]="progressPercent()"></div>
+        </div>
+
+        <h3 class="question-text">
+            {{ q.a }}
+            {{
+            q.operation === 'multiplication'
+            ? '×'
+            : q.operation === 'addition'
+            ? '+'
+            : '−'
+            }}
+            {{ q.b }} = ?
+        </h3>
+
+        <!-- Multiple-choice -->
+        <div class="options" *ngIf="q.mode === 'mc'">
+            <button mat-raised-button class="opt" *ngFor="let opt of q.options!" (click)="pickOption(opt)">
+                {{ opt }}
+            </button>
+        </div>
+
+        <!-- Typed -->
+        <div *ngIf="q.mode === 'typed'" class="typed">
+            <!-- Default keyboard -->
+            <div *ngIf="!useCustomKeypad" class="typed-field">
+                <mat-form-field appearance="outline" class="typed-field">
+                    <input matInput type="number" [(ngModel)]="typedAnswer" (keyup.enter)="submitTyped()" />
+                </mat-form-field>
+                <button mat-raised-button color="primary" (click)="submitTyped()">Submit</button>
+            </div>
+
+            <!-- Custom keypad -->
+            <div *ngIf="useCustomKeypad" class="typed">
+                <div class="typed-display">
+                    <span class="value">{{ typedAnswer || ' ' }}</span>
+                </div>
+
+                <div class="keypad">
+                    <button *ngFor="let n of [1,2,3,4,5,6,7,8,9]" (click)="appendDigit(n)">
+                        {{ n }}
+                    </button>
+                    <button (click)="appendDigit(0)">0</button>
+                    <button (click)="backspace()">←</button>
+                    <button class="enter" (click)="submitTyped()">⏎</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</mat-card>
+
+<!-- Summary -->
+<mat-card *ngIf="mode() === 'summary'" class="summary">
+    <h2>Challenge Summary</h2>
+    <p>You got {{ correctCount() }} / {{ totalQuestions }}</p>
+    <p *ngIf="correctCount() >= requiredCorrect">🎉 Reward: {{ reward }}</p>
+    <p *ngIf="correctCount() < requiredCorrect">❌ No reward this time.</p>
+    <button mat-raised-button (click)="retry()">Retry</button>
+</mat-card>

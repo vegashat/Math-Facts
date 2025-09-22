@@ -1,0 +1,24 @@
+<mat-card class="quiz-card">
+    <div class="q-wrap">
+        <h2 class="question">Past Challenges</h2>
+
+        <div *ngIf="challenges.length > 0; else noChallenges">
+            <div *ngFor="let c of challenges" class="challenge-entry">
+                <div class="summary">
+                    <div><strong>Date:</strong> {{ c.date | date:'short' }}</div>
+                    <div><strong>Tables:</strong> {{ c.tables.join(', ') }}</div>
+                    <div><strong>Score:</strong> {{ c.correct }}/{{ c.total }}</div>
+                    <div><strong>Required:</strong> {{ c.required }}</div>
+                    <div><strong>Reward:</strong> {{ c.reward }}</div>
+                </div>
+                <div class="status" [class.success]="c.success" [class.fail]="!c.success">
+                    {{ c.success ? '✅ Success' : '❌ Failed' }}
+                </div>
+            </div>
+        </div>
+
+        <ng-template #noChallenges>
+            <p>No past challenges yet.</p>
+        </ng-template>
+    </div>
+</mat-card>

@@ -20,6 +20,18 @@ export const routes: Routes = [
         .then((m) => m.QuizComponent),
   },
   {
+    path: 'take-quiz',
+    loadComponent: () =>
+      import('./features/take-quiz/take-quiz.component')
+        .then(m => m.TakeQuizComponent),
+  },
+  {
+    path: 'challenges',
+    loadComponent: () =>
+      import('./features/past-challenges/past-challenges.component')
+        .then(m => m.PastChallengesComponent),
+  },
+  {
     path: 'stats',
     loadComponent: () =>
       import('./features/stats/stats.component')

@@ -170,4 +170,27 @@ export class StorageService {
     this.state.useCustomKeypad = val;
     this.saveState();
   }
+
+  saveChallenge(summary: any) {
+    const user = this.getCurrentUser();
+    if (!user) return;
+    const key = `challenges-${user.id}`;
+    const data = JSON.parse(localStorage.getItem(key) || '[]');
+    data.push(summary);
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  getChallenges(): any[] {
+    const user = this.getCurrentUser();
+    if (!user) return [];
+    const key = `challenges-${user.id}`;
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  }
+
+  clearChallenges() {
+    const user = this.getCurrentUser();
+    if (!user) return;
+    const key = `challenges-${user.id}`;
+    localStorage.removeItem(key);
+  }
 }
