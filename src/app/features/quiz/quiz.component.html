@@ -59,7 +59,6 @@
       <div *ngIf="useCustomKeypad" class="typed">
         <div class="typed-display">
           <span *ngIf="flashing()" class="hint flash">{{ q.product }}</span>
-          <span *ngIf="showAnswer()" class="hint">{{ q.product }}</span>
           <span class="value">{{ typedAnswer() || ' ' }}</span>
         </div>
 
