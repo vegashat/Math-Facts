@@ -27,25 +27,31 @@ export class StorageService {
   // Persistence
   // ---------------------------
   private loadState(): AppState {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        return JSON.parse(raw) as AppState;
-      } catch {
-        console.warn('Bad local storage state, resetting.');
+    try {
+      let id = this.currentOrThrow().id;
+      const raw = localStorage.getItem(`${STORAGE_KEY}-${id}`);
+      if (raw) {
+        try {
+          return JSON.parse(raw) as AppState;
+        } catch {
+          console.warn('Bad local storage state, resetting.');
+        }
       }
+    } catch {
+      console.warn('Error loading state');
     }
-    return {
-      version: 1,
-      selectedNumbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-      mode: 'tables',
-      users: [],
-      useCustomKeypad: false,
-    };
+      return {
+        version: 1,
+        selectedNumbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        mode: 'tables',
+        users: [],
+        useCustomKeypad: false,
+      };
   }
 
   private saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    let id = this.currentOrThrow().id;
+    localStorage.setItem(`${STORAGE_KEY}-${id}`, JSON.stringify(this.state));
   }
 
   private uuid(): string {
@@ -157,6 +163,7 @@ export class StorageService {
   public resetLifetime() {
     const user = this.currentOrThrow();
     user.lifetimeStats = { total: 0, correct: 0 };
+    user.problemHistory = {};
     this.saveState();
   }
   // ---------------------------
