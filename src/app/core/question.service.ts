@@ -161,8 +161,69 @@ export class QuestionService {
 
     return questions;
   }
+  generateSequentialQuiz(
+    tables: number[],
+    totalQuestions: number,
+    mode: 'mc' | 'typed',
+    operation: Operation,
+    reverse = false
+  ): Question[] {
+    const qs: Question[] = [];
+
+    if (operation === Operation.Multiplication) {
+      for (const a of tables) {
+        for (let b = 1; b <= 12; b++) {
+          const first = reverse ? b : a;
+          const second = reverse ? a : b;
+          qs.push({
+            a: first,
+            b: second,
+            operation,
+            product: first * second,
+            mode,
+            key: `${first}x${second}`,
+            orientation: reverse ? 'max-first' : 'min-first',
+            options: mode === 'mc' ? this.buildThreeOptions(first * second) : undefined
+          });
+        }
+      }
+    }
+
+    if (operation === Operation.Addition || operation === Operation.Subtraction) {
+      for (let a = 1; a <= 12; a++) {
+        for (let b = 1; b <= 12; b++) {
+          let result = operation === Operation.Addition ? a + b : a - b;
+          if (result < 0) continue;
+          const first = reverse ? b : a;
+          const second = reverse ? a : b;
+          qs.push({
+            a: first,
+            b: second,
+            operation,
+            product: result,
+            mode,
+            key: `${first}${operation}${second}`,
+            orientation: reverse ? 'max-first' : 'min-first',
+            options: mode === 'mc' ? this.makeOptions(result) : undefined
+          });
+        }
+      }
+    }
+
+    return qs.slice(0, totalQuestions);
+  }
 
   // ---------- helpers ----------
+  private makeOptions(answer: number): number[] {
+    const opts = new Set<number>();
+    opts.add(answer);
+    while (opts.size < 4) {
+      const delta = Math.floor(Math.random() * 10) - 5;
+      const distractor = answer + delta;
+      if (distractor >= 0) opts.add(distractor);
+    }
+    return Array.from(opts).sort(() => Math.random() - 0.5);
+  }
 
   private ensureStats(key: string) {
     const s = this.store.getProblemStats(key);

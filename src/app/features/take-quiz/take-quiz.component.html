@@ -2,15 +2,15 @@
     <h2>Setup Challenge</h2>
 
     <!-- Operation type -->
-    <mat-radio-group [(ngModel)]="operation">
-        <mat-radio-button value="multiplication">Multiplication</mat-radio-button>
-        <mat-radio-button value="addition">Addition</mat-radio-button>
-        <mat-radio-button value="subtraction">Subtraction</mat-radio-button>
-    </mat-radio-group>
+<mat-radio-group [(ngModel)]="operation">
+  <mat-radio-button [value]="Operation.Multiplication">Multiplication</mat-radio-button>
+  <mat-radio-button [value]="Operation.Addition">Addition</mat-radio-button>
+  <mat-radio-button [value]="Operation.Subtraction">Subtraction</mat-radio-button>
+</mat-radio-group>
 
     <!-- Only show tables if multiplication -->
-    <div *ngIf="operation === 'multiplication'">
-        <p>Select up to 2 multiplication tables:</p>
+    <div *ngIf="operation === Operation.Multiplication">
+        <p>Select multiplication tables:</p>
         <div class="tables">
             <mat-checkbox *ngFor="let n of [1,2,3,4,5,6,7,8,9,10]" [checked]="selectedTables.includes(n)"
                 (change)="toggleTable(n)">
@@ -38,6 +38,16 @@
         <mat-radio-button value="mc">Multiple Choice</mat-radio-button>
         <mat-radio-button value="typed">Typed</mat-radio-button>
     </mat-radio-group>
+    <mat-radio-group [(ngModel)]="quizStyle">
+        <mat-radio-button value="random">Random</mat-radio-button>
+        <mat-radio-button value="sequential">Sequential</mat-radio-button>
+    </mat-radio-group>
+
+    <div *ngIf="quizStyle === 'sequential'">
+        <mat-checkbox [(ngModel)]="reverseOrder">
+            Reverse Order (e.g., 2×1 instead of 1×2)
+        </mat-checkbox>
+    </div>
 
     <mat-checkbox [(ngModel)]="repeatIncorrect">
         Repeat incorrect until correct
@@ -55,7 +65,7 @@
         <div class="tracker-box" *ngFor="let q of questions; let i = index"
             [class.correct]="i < currentIndex() && answers[i] === true"
             [class.wrong]="i < currentIndex() && answers[i] === false" [class.current]="i === currentIndex()">
-            <span *ngIf="i + 1 === requiredCorrect" class="marker">⭐</span>
+            <span *ngIf="nextRequiredIndex !== null && i + 1 === nextRequiredIndex" class="marker">⭐</span>
         </div>
     </div>
     <div class="q-wrap">
@@ -64,13 +74,25 @@
         <div class="progress">
             <div class="bar" [style.height.%]="progressPercent()"></div>
         </div>
+        <div class="previous-q" *ngIf="currentIndex() > 0">
+            {{ questions[currentIndex() - 1].a }}
+            {{
+            questions[currentIndex() - 1].operation === Operation.Multiplication
+            ? '×'
+            : questions[currentIndex() - 1].operation === Operation.Addition
+            ? '+'
+            : '−'
+            }}
+            {{ questions[currentIndex() - 1].b }}
+            = {{ questions[currentIndex() - 1].product }}
+        </div>
 
         <h3 class="question-text">
             {{ q.a }}
             {{
-            q.operation === 'multiplication'
+            q.operation === Operation.Multiplication
             ? '×'
-            : q.operation === 'addition'
+            : q.operation === Operation.Addition
             ? '+'
             : '−'
             }}

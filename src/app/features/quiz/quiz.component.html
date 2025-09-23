@@ -1,17 +1,79 @@
-<mat-card
-  class="quiz-card"
-  [class.correct]="feedback === 'correct'"
-  [class.wrong]="feedback === 'wrong'"
->
+<!-- Setup Screen -->
+<mat-card *ngIf="mode() === 'setup'">
+  <h2>Setup Practice Quiz</h2>
+
+  <!-- Operation type -->
+  <mat-radio-group [(ngModel)]="operation">
+    <mat-radio-button [value]="Operation.Multiplication">Multiplication</mat-radio-button>
+    <mat-radio-button [value]="Operation.Addition">Addition</mat-radio-button>
+    <mat-radio-button [value]="Operation.Subtraction">Subtraction</mat-radio-button>
+  </mat-radio-group>
+
+  <!-- Multiplication tables -->
+  <div *ngIf="operation === Operation.Multiplication">
+    <p>Select multiplication tables:</p>
+    <div class="tables">
+      <mat-checkbox *ngFor="let n of [1,2,3,4,5,6,7,8,9,10]" [checked]="selectedTables.includes(n)"
+        (change)="toggleTable(n)">
+        {{ n }}
+      </mat-checkbox>
+    </div>
+  </div>
+
+  <mat-form-field>
+    <mat-label>Total Questions</mat-label>
+    <input matInput type="number" [(ngModel)]="totalQuestions" />
+  </mat-form-field>
+
+  <mat-radio-group [(ngModel)]="quizMode">
+    <mat-radio-button value="mc">Multiple Choice</mat-radio-button>
+    <mat-radio-button value="typed">Typed</mat-radio-button>
+  </mat-radio-group>
+
+  <mat-radio-group [(ngModel)]="quizStyle">
+    <mat-radio-button value="random">Random</mat-radio-button>
+    <mat-radio-button value="sequential">Sequential</mat-radio-button>
+  </mat-radio-group>
+
+  <div *ngIf="quizStyle === 'sequential'">
+    <mat-checkbox [(ngModel)]="reverseOrder">
+      Reverse Order (e.g., 2×1 instead of 1×2)
+    </mat-checkbox>
+  </div>
+
+  <mat-checkbox [(ngModel)]="repeatIncorrect">
+    Repeat incorrect until correct
+  </mat-checkbox>
+
+  <button mat-raised-button color="primary" (click)="startQuiz()">
+    Start Quiz
+  </button>
+</mat-card>
+
+<!-- Quiz Screen -->
+<mat-card *ngIf="mode() === 'quiz'" class="quiz-card" [class.correct]="feedback === 'correct'"
+  [class.wrong]="feedback === 'wrong'">
   <div class="q-wrap" *ngIf="question() as q">
+    <div class="previous-q" *ngIf="currentIndex() > 0 && quizStyle === 'sequential'">
+      {{ questions[currentIndex() - 1].a }}
+      {{
+      questions[currentIndex() - 1].operation === Operation.Multiplication
+      ? '×'
+      : questions[currentIndex() - 1].operation === Operation.Addition
+      ? '+'
+      : '−'
+      }}
+      {{ questions[currentIndex() - 1].b }}
+      = {{ questions[currentIndex() - 1].product }}
+    </div>
     <h2 class="question">
       {{ q.a }}
       {{
-        q.operation === 'multiplication'
-          ? '×'
-          : q.operation === 'addition'
-          ? '+'
-          : '−'
+      q.operation === Operation.Multiplication
+      ? '×'
+      : q.operation === Operation.Addition
+      ? '+'
+      : '−'
       }}
       {{ q.b }} =
       <ng-container>
@@ -23,31 +85,19 @@
 
     <!-- Multiple-choice -->
     <div class="options" *ngIf="q.mode === 'mc'">
-      <button
-        mat-raised-button
-        class="opt"
-        *ngFor="let opt of q.options!"
-        (click)="pickOption(opt)"
-      >
+      <button mat-raised-button class="opt" *ngFor="let opt of q.options!" (click)="pickOption(opt)"
+        [class.pulse]="autoRevealCorrect === opt">
         {{ opt }}
       </button>
     </div>
 
     <!-- Typed mode -->
     <ng-container *ngIf="q.mode === 'typed'">
-      <!-- Default keyboard -->
+      <!-- Default input -->
       <div *ngIf="!useCustomKeypad" class="typed">
         <mat-form-field appearance="outline" class="typed-field">
-          <input
-            #answerInput
-            matInput
-            type="number"
-            placeholder="Answer?"
-            [value]="typedAnswer()"
-            (input)="onTypedInput($event)"
-            (keyup.enter)="submitTyped()"
-            [attr.key]="q.key"
-          />
+          <input #answerInput matInput type="number" placeholder="Answer?" [value]="typedAnswer"
+            (input)="onTypedInput($event)" (keyup.enter)="submitTyped()" [attr.key]="q.key" />
         </mat-form-field>
 
         <button mat-raised-button color="primary" (click)="submitTyped()">
@@ -58,12 +108,11 @@
       <!-- Custom keypad -->
       <div *ngIf="useCustomKeypad" class="typed">
         <div class="typed-display">
-          <span *ngIf="flashing()" class="hint flash">{{ q.product }}</span>
-          <span class="value">{{ typedAnswer() || ' ' }}</span>
+          <span class="value">{{ typedAnswer || ' ' }}</span>
         </div>
 
         <div class="keypad">
-          <button *ngFor="let n of [1, 2, 3, 4, 5, 6, 7, 8, 9]" (click)="appendDigit(n)">
+          <button *ngFor="let n of [1,2,3,4,5,6,7,8,9]" (click)="appendDigit(n)">
             {{ n }}
           </button>
           <button (click)="appendDigit(0)">0</button>

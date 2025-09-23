@@ -39,8 +39,6 @@ export class TakeQuizComponent {
   quizMode: 'mc' | 'typed' = 'mc';
   repeatIncorrect = false;
 
-  operation: 'multiplication' | 'addition' | 'subtraction' = 'multiplication';
-
   questions: Question[] = [];
   currentIndex = signal(0);
   correctCount = signal(0);
@@ -50,6 +48,12 @@ export class TakeQuizComponent {
 
   answers: (boolean | null)[] = []; // track correct/wrong/null
   useCustomKeypad = true; // default to on for kids
+  quizStyle: 'random' | 'sequential' = 'random';
+  reverseOrder = false;
+
+  operation: Operation = Operation.Multiplication;
+  Operation = Operation;
+
 
   constructor(private qs: QuestionService, private store: StorageService) { }
 
@@ -71,19 +75,24 @@ export class TakeQuizComponent {
 
 
   startQuiz() {
-    if (this.operation === 'multiplication' && this.selectedTables.length === 0) {
-      return;
+    if (this.quizStyle === 'sequential') {
+      this.questions = this.qs.generateSequentialQuiz(
+        this.selectedTables,
+        this.totalQuestions,
+        this.quizMode,
+        this.operation,
+        this.reverseOrder
+      );
+    } else {
+      this.questions = this.qs.generateQuiz(
+        this.selectedTables,
+        this.totalQuestions,
+        this.quizMode,
+        this.repeatIncorrect,
+        this.operation
+      );
     }
 
-    this.questions = this.qs.generateQuiz(
-      this.selectedTables,
-      this.totalQuestions,
-      this.quizMode,
-      this.repeatIncorrect,
-      this.operation
-    );
-
-    this.answers = Array(this.questions.length).fill(null); // reset
     this.currentIndex.set(0);
     this.correctCount.set(0);
     this.typedAnswer = '';
@@ -153,4 +162,9 @@ export class TakeQuizComponent {
       Math.round((100 * this.correctCount()) / this.requiredCorrect)
     )
   );
+  get nextRequiredIndex(): number | null {
+    const wrongCount = this.currentIndex() - this.correctCount();
+    const index = this.requiredCorrect + wrongCount;
+    return index <= this.totalQuestions ? index : null;
+  }
 }
