@@ -82,6 +82,17 @@
         <span *ngIf="showAnswer()">{{ q.product }}</span>
       </ng-container>
     </h2>
+    <!-- Visual representation for multiplication only -->
+    <div class="visual-grid" *ngIf="q.operation === Operation.Multiplication && feedback == 'idle'">
+      <div class="row" *ngFor="let r of [].constructor(q.b)">
+        <img *ngFor="let c of [].constructor(q.a)" src="assets/sonic-math.gif" alt="Sonic"
+          [style.width.px]="getImageSize(q.a, q.b)" [style.height.px]="getImageSize(q.a, q.b)" />
+      </div>
+    </div>
+    <div class="feedback-message" *ngIf="feedback !== 'idle'">
+      <span *ngIf="feedback === 'correct'">{{ positiveMessage }}</span>
+      <span *ngIf="feedback === 'wrong'">{{ encouragementMessage }}</span>
+    </div>
 
     <!-- Multiple-choice -->
     <div class="options" *ngIf="q.mode === 'mc'">
@@ -122,10 +133,24 @@
       </div>
     </ng-container>
   </div>
+  <!-- Finished Screen -->
+<mat-card *ngIf="mode() === 'finished'" class="quiz-card"
+  [class.correct]="feedback === 'correct'" [class.wrong]="feedback === 'wrong'">
 
-  <div class="stats">
-    <div>
-      Session: {{ sessionCorrect() }}/{{ sessionTotal() }} ({{ percent() }}%)
+  <div class="q-wrap">
+    <h2>All Done!</h2>
+
+    <div class="feedback-message">
+      <span *ngIf="feedback === 'correct'">{{ positiveMessage }}</span>
+      <span *ngIf="feedback === 'wrong'">{{ encouragementMessage }}</span>
     </div>
+
+    <p>Score: {{ sessionCorrect() }}/{{ sessionTotal() }} ({{ percent() }}%)</p>
+
+    <button mat-raised-button color="primary" (click)="retry()">
+      Retry
+    </button>
   </div>
+</mat-card>
+
 </mat-card>

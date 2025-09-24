@@ -58,12 +58,14 @@
 
 .progress-tracker {
   display: flex;
+  flex-wrap: wrap;   /* <-- allow wrapping */
   justify-content: center;
   gap: 4px;
   margin-bottom: 20px;
+  max-width: 100%;   /* keep within card */
 }
-
 .tracker-box {
+  flex: 0 0 auto;
   width: 20px;
   height: 20px;
   border: 2px solid #ccc;

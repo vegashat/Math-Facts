@@ -165,3 +165,40 @@
   margin-bottom: 12px;
   font-style: italic;
 }
+
+.visual-grid {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* space between rows */
+
+  .row {
+    display: flex;
+    justify-content: center;
+    gap: 6px; /* space between images */
+  }
+
+  img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+  }
+}
+
+.feedback-message {
+  margin-top: 16px;
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-align: center;
+  min-height: 2em; /* keeps space even if no message */
+}
+
+.feedback-message span {
+  display: inline-block;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

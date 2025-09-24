@@ -20,7 +20,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-type Mode = 'setup' | 'quiz';
+type Mode = 'setup' | 'quiz' | 'finished';
 
 @Component({
   selector: 'app-quiz',
@@ -161,7 +161,7 @@ export class QuizComponent implements OnInit {
           this.autoRevealCorrect = null;
         }, 2000);
       }
-    }, 5000);
+    }, 15000);
 
     setTimeout(() => {
       if (q.mode === 'typed' && this.answerInput && !this.useCustomKeypad) {
@@ -199,22 +199,91 @@ export class QuizComponent implements OnInit {
     this.typedAnswer = (this.typedAnswer.slice(0, -1));
   }
 
+  positiveMessages: string[] = [
+    // Serious
+    "Awesome work! ✅",
+    "Great job, keep it up! 🎉",
+    "You nailed it! 💯",
+    "Correct! You're on fire! 🔥",
+    "Brilliant answer! 🌟",
+
+    // Math puns
+    "You’re right on the money… and the change too! 💰➕",
+    "That answer was integral to your success! 🔢",
+    "Correct! You’ve really multiplied your skills! ✖️",
+    "You just added another win! ➕🎉",
+    "You’ve got the right angle! 📐",
+    "You’re as sharp as a protractor! 🪄",
+    "You’re really in your prime! 🔑",
+    "That answer was off the charts! 📊",
+    "You’ve got the power! (Exponentially awesome ⚡️)"
+  ];
+
+  encouragementMessages: string[] = [
+    // Serious
+    "Almost! You'll get it next time. 💪",
+    "Keep going, you’re learning with every try! 📘",
+    "Don’t worry, mistakes help us grow! 🌱",
+    "Close one — you’ve got this! 👍",
+    "Shake it off and try again! 🎵",
+
+    // Math puns
+    "Don’t worry — mistakes are just functions of learning! 🔄",
+    "That one didn’t add up — but the next one will! ➕",
+    "You can count on yourself to get it next time! 🔢",
+    "No need to feel divided — you’ve got this! ➗❤️",
+    "Even the best mathematicians have their minus moments. ➖",
+    "It’s just one problem — don’t let it multiply! ✖️🙂",
+    "You’re greater than you think! ( > ) 🌟",
+    "Stay positive! (like numbers) ➕✨",
+    "That one was a fraction tricky — but you’ll solve the whole soon! 🍕",
+    "Math is about trying again until it all equals out! ="
+  ];
+
+  positiveMessage = "";
+  encouragementMessage = "";
+
   private handleResult(isCorrect: boolean) {
-    this.clearTimers(); // cancel reveal if answered early
+    this.clearTimers();
     const q = this.question();
     if (!q) return;
 
     this.qs.recordAnswer(q, isCorrect);
     this.sessionTotal.set(this.sessionTotal() + 1);
-    if (isCorrect) this.sessionCorrect.set(this.sessionCorrect() + 1);
-
-    this.feedback = isCorrect ? 'correct' : 'wrong';
+    if (isCorrect) {
+      this.sessionCorrect.set(this.sessionCorrect() + 1);
+      this.feedback = 'correct';
+      this.positiveMessage = this.randomMessage(this.positiveMessages);
+    } else {
+      this.feedback = 'wrong';
+      this.encouragementMessage = this.randomMessage(this.encouragementMessages);
+    }
 
     if (this.currentIndex() + 1 < this.questions.length) {
       this.currentIndex.set(this.currentIndex() + 1);
-      setTimeout(() => this.loadNext(), 450);
+      setTimeout(() => this.loadNext(), 1800);
     } else {
-      this.mode.set('setup'); // end returns to setup for practice
+      // instead of returning to setup immediately, show finished screen
+      this.mode.set('finished');
     }
+  }
+  private randomMessage(list: string[]): string {
+    const idx = Math.floor(Math.random() * list.length);
+    return list[idx];
+  }
+  getImageSize(cols: number, rows: number): number {
+    const total = cols * rows;
+    if (rows <= 4) return 60;
+    if (rows <= 6) return 45;
+    if (rows <= 8) return 30;
+    return 20; // tiny for big grids
+  }
+  retry() {
+    this.mode.set('setup');
+    this.currentIndex.set(0);
+    this.sessionCorrect.set(0);
+    this.sessionTotal.set(0);
+    this.feedback = 'idle';
+    this.typedAnswer = '';
   }
 }
